@@ -26,8 +26,7 @@ const register = async (req, res) => {
     !params.email ||
     !params.nick ||
     !params.password ||
-    !params.num_user ||
-    !params.id_roleNum
+    !params.num_user
   ) {
     return res
       .status(400)
@@ -53,8 +52,9 @@ const register = async (req, res) => {
     let pwd = await bcrypt.hash(params.password, 10);
     params.password = pwd;
 
+    const id_roleNum = 2;
     // Buscar y asignar rol por id_roleNum
-    const role = await Role.findOne({ id_roleNum: params.id_roleNum });
+    const role = await Role.findOne({ id_roleNum: id_roleNum });
     if (!role) {
       return res
         .status(400)
@@ -239,15 +239,26 @@ const list = async (req, res) => {
 };
 const update = async (req, res) => {
   try {
+    const userId = req.params.id;
+
+    if (!userId) {
+      return res.status(400).json({ status: "error", message: "ID de usuario no proporcionado." });
+    }
+
     // Recoger información del usuario a actualizar desde el cuerpo de la solicitud
-    const userIdentity = req.user;
     let userToUpdate = req.body;
 
     // Eliminar campos innecesarios
     delete userToUpdate.iat;
     delete userToUpdate.exp;
-    delete userToUpdate.role;
-    delete userToUpdate.imagen;
+
+    // Verificar y agregar el campo roles
+    if (userToUpdate.roles) {
+      const roleExists = await Role.findById(userToUpdate.roles);
+      if (!roleExists) {
+        return res.status(400).json({ status: "error", message: "El rol especificado no existe." });
+      }
+    }
 
     // Comprobar si el usuario ya existe
     const users = await User.find({
@@ -259,57 +270,39 @@ const update = async (req, res) => {
 
     let userIsset = false;
     users.forEach((user) => {
-      if (user && user._id.toString() !== userIdentity.id.toString()) {
+      if (user && user._id.toString() !== userId) {
         userIsset = true;
       }
     });
 
     if (userIsset) {
       return res.status(200).json({
-        status: "success",
-        message: "El usuario ya existe",
+        status: "error",
+        message: "El usuario ya existe con el mismo email o nick.",
         userToUpdate,
       });
     }
 
-    // Si la contraseña está presente, cifrarla
-    if (userToUpdate.password) {
-      const hashedPassword = await bcrypt.hash(userToUpdate.password, 10);
-      userToUpdate.password = hashedPassword;
-
-      //añadido
-    } else {
-      delete userToUpdate.password;
+    // Verificar si hay un archivo de imagen en la solicitud
+    if (req.file) {
+      // Guardar la ruta del archivo en el campo 'profile_image' del usuario
+      userToUpdate.profile_image = req.file.filename;
     }
 
-    // Buscar y actualizar el usuario en la base de datos
-    const userUpdate = await User.findByIdAndUpdate(
-      userIdentity.id,
-      userToUpdate,
-      { new: true }
-    );
+    // Actualizar el usuario en la base de datos
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { ...userToUpdate, updated_at: Date.now() },
+      { new: true, runValidators: true }
+    ).populate("roles");
 
-    if (!userUpdate) {
-      return res.status(500).json({
-        status: "error",
-        message: "Error al actualizar el usuario",
-      });
-    }
-
-    // Devolver respuesta
-    return res.status(200).json({
-      status: "success",
-      message: "Usuario actualizado correctamente",
-      userUpdate,
-    });
+    return res.status(200).json({ status: "success", user: updatedUser });
   } catch (error) {
-    return res.status(500).json({
-      status: "error",
-      message: "Error al actualizar el usuario",
-      error: error.message,
-    });
+    console.error(error);
+    return res.status(500).json({ status: "error", message: "Error al actualizar el usuario." });
   }
 };
+
 
 const upload = async (req, res) => {
   try {

@@ -10,6 +10,7 @@ const technicalProfileSchema = new mongoose.Schema({
   email_technical:{ type: String, required:true},
   profile_image: { type: String, required: false },
   num_technical: { type: String, required: true },
+  category_id: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
   location: {
     type: { type: String, enum: ['Point'], required: true },
     coordinates: { type: [Number], required: true }

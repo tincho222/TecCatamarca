@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   TextField,
@@ -14,16 +14,61 @@ import {
 } from "@mui/material";
 import { UseForm } from "../../../hooks/UseForm";
 import { Global } from "../../../helpers/Global";
+import { useNavigate } from "react-router-dom"; // Importar useNavigate
 
 export const RegisterTec = () => {
   const { form, changed } = UseForm({});
   const [saved, setSaved] = useState("not_sended");
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const navigate = useNavigate();
 
+  useEffect(() => {
+    // Cargar categorías desde el backend
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch(Global.url + "categories/getCategories");
+        const result = await response.json();
+        if (response.ok) {
+          setCategories(result.categories); // Asumiendo que el resultado tiene un campo `categories`
+        } else {
+          console.error("Error al obtener categorías:", result);
+        }
+      } catch (error) {
+        console.error("Error al hacer la solicitud:", error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const saveProfile = async (e) => {
     e.preventDefault();
 
-    // Crear el objeto location
+    // Obtener user_id y token del localStorage
+    const storedUser = localStorage.getItem("user");
+    const userId = storedUser ? JSON.parse(storedUser).id : null;
+    const token = localStorage.getItem("token");
+
+    if (!userId || !token) {
+      console.error("No se encontró user_id o token en el localStorage.");
+      setSaved("error");
+      return;
+    }
+
+    // Crear el objeto FormData
+    const formData = new FormData();
+    formData.append("user_id", userId);
+    formData.append("local_name", form.local_name);
+    formData.append("bio", form.bio);
+    formData.append("skills", form.skills);
+    formData.append("rating", form.rating);
+    formData.append("email_technical", form.email_technical);
+    formData.append("num_technical", form.num_technical);
+    formData.append("address", form.address);
+    formData.append("category_id", selectedCategory); // Añadir category_id
+
+    // Crear el objeto location y añadirlo a FormData
     const coordinates = form.coordinates
       ? form.coordinates.split(",").map(Number)
       : [];
@@ -31,34 +76,45 @@ export const RegisterTec = () => {
       type: "Point",
       coordinates: coordinates,
     };
+    formData.append("location", JSON.stringify(location));
 
-    const formData = new FormData();
-    formData.append("user_id", userId); // Añadir user_id al FormData
-    formData.append("local_name", form.local_name);
-    formData.append("bio", form.bio);
-    formData.append("skills", JSON.stringify(form.skills)); // Convertir skills a JSON
-    formData.append("rating", form.rating);
-    formData.append("email_technical", form.email_technical);
-    formData.append("num_technical", form.num_technical);
-    formData.append("address", form.address);
-    formData.append("location", JSON.stringify(location)); // Añadir location como JSON
+    // Añadir el nombre del archivo como profile_image
+    if (form.profile_image && form.profile_image.name) {
+      formData.append("profile_image", form.profile_image.name);
+    }
 
-    const fileInput = document.querySelector("#file0");
-    if (fileInput.files[0]) {
-      formData.append("profile_image", fileInput.files[0]);
+    // Añadir el archivo como file0
+    if (form.profile_image && form.profile_image) {
+      formData.append("file0", form.profile_image);
     }
 
     try {
       const response = await fetch(Global.url + "technical/createTechnical", {
         method: "POST",
+        headers: {
+          Authorization: `${token}`,
+        },
         body: formData,
       });
 
-      const data = await response.json();
+      const result = await response.json();
+  
 
-      if (data.status === "success") {
+      if (result.status === "success") {
         setSaved("saved");
+        console.log("probando",result)
+        const tecnicoPerfil = result.profileId
+        // Actualizar el localStorage con el nuevo rol
+        const updatedUser = {
+          ...JSON.parse(storedUser),
+          roles: ["technical"],
+          tecnicoPerfil // Suponiendo que el rol técnico tiene este valor
+        };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        window.location.reload();
+        navigate("/"); 
       } else {
+        console.error("Error en la respuesta:", result);
         setSaved("error");
       }
     } catch (error) {
@@ -152,6 +208,7 @@ export const RegisterTec = () => {
                 </Select>
               </FormControl>
             </Grid>
+
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth variant="outlined">
                 <InputLabel id="rating-label">Calificación</InputLabel>
@@ -163,6 +220,26 @@ export const RegisterTec = () => {
                 />
               </FormControl>
             </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth variant="outlined">
+                <InputLabel id="category-label">Categoría</InputLabel>
+                <Select
+                  labelId="category-label"
+                  name="category_id"
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  label="Categoría"
+                >
+                  {categories.map((category) => (
+                    <MenuItem key={category._id} value={category._id}>
+                      {category.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
             <Grid item xs={12}>
               <Button
                 variant="contained"

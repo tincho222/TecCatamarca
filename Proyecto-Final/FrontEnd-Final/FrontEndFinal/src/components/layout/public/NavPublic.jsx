@@ -205,7 +205,7 @@ function NavPublic() {
                 Sobre Nosotros
               </Typography>
             </MenuItem>
-            <MenuItem onClick={handleCloseNavMenu}>
+{/*             <MenuItem onClick={handleCloseNavMenu}>
               <Typography
                 component={Link}
                 to="/blog"
@@ -219,7 +219,7 @@ function NavPublic() {
                     position: "absolute",
                     width: "100%",
                     height: "2px",
-                    bottom: "-2px", // ajusta este valor para darle más espacio
+                    bottom: "-2px",  ajusta este valor para darle más espacio
                     left: "0",
                     backgroundColor: "currentColor",
                     visibility: "visible",
@@ -231,7 +231,7 @@ function NavPublic() {
                     position: "absolute",
                     width: "100%",
                     height: "2px",
-                    bottom: "-2px", // ajusta este valor para darle más espacio
+                    bottom: "-2px",  ajusta este valor para darle más espacio
                     left: "0",
                     backgroundColor: "currentColor",
                     visibility: "hidden",
@@ -242,11 +242,11 @@ function NavPublic() {
               >
                 Servicios
               </Typography>
-            </MenuItem>
+            </MenuItem> */}
             <MenuItem onClick={handleCloseNavMenu}>
               <Typography
                 component={Link}
-                to="private/tecnicos"
+                to="FeedTecnicos"
                 textAlign="center"
                 sx={{
                   color: "inherit",

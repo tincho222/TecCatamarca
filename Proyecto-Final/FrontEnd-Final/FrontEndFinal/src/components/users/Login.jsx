@@ -3,11 +3,12 @@ import React, { useState } from "react";
 import { UseForm } from "../../hooks/UseForm";
 import { Global } from "../../helpers/Global";
 import useAuth from "../../hooks/useAuth";
+import { useNavigate } from "react-router-dom"; // Importar useNavigate
 
 export const Login = () => {
   const { form, changed } = UseForm({});
   const { setAuth } = useAuth();
-
+  const navigate = useNavigate(); // Inicializar useNavigate
   // Estados para manejar los mensajes de error y éxito
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -35,6 +36,7 @@ export const Login = () => {
 
         // Redireccionar después de un pequeño retraso
         setTimeout(() => {
+          navigate("/"); // Cambia a la página principal
           window.location.reload();
         }, 1000);
       } else {

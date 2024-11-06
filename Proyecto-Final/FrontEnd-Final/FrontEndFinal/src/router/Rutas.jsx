@@ -9,6 +9,11 @@ import { AuthProvider } from "../context/AuthProvider";
 import { PrivateLayout } from "../components/layout/private/PrivateLayout";
 import FeedTecnicos from "../components/layout/tecnicos/FeedTecnicos";
 import { RegisterTec } from "../components/layout/tecnicos/RegisterTec";
+import { Logout } from "../components/users/Logout";
+import { PrivateMain } from "../components/layout/private/PrivateMain";
+import { EditarTecnicos } from "../components/layout/tecnicos/EditarTecnicos";
+import { EditarUsers } from "../components/users/EditarUsers";
+
 
 const Rutas = () => {
   return (
@@ -20,13 +25,18 @@ const Rutas = () => {
             <Route index element={<Maint />} />
             <Route path="login" element={<Login />} />
             <Route path="register" element={<Register />} />
+            <Route path="tecnicos" element={<Tecnicos />} />
+            <Route path="feedTecnicos" element={<FeedTecnicos />} />
           </Route>
 
           {/* Rutas Privadas */}
           <Route path="/private" element={<PrivateLayout />}>
-          <Route path="tecnicos" element={<Tecnicos />} />
           <Route path="feedTecnicos" element={<FeedTecnicos />} />
+          <Route path="privateMain" element={<PrivateMain />} />
           <Route path="registerTec" element={<RegisterTec />} />
+          <Route path="editTec" element={<EditarTecnicos />} />
+          <Route path="editUsers" element={<EditarUsers />} />
+          <Route path="logout" element={<Logout />} />
           </Route>
         </Routes>
       </AuthProvider>

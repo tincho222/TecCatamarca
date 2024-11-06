@@ -14,7 +14,7 @@ export const PublicLayout = () => {
          {!auth._id ? 
           <Outlet />
           :
-           <Navigate to="/private/feedTecnicos"/>
+           <Navigate to="/private/privateMain"/>
           }
       </section>
       <Footer />

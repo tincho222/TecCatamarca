@@ -37,7 +37,7 @@ export default function Footer() {
             <FooterLogo>
               <img
                 style={{ height: "70px", width: "auto" }}
-                src="src/assets/img/logo-footer.png"
+                src="../src/assets/img/logo-footer.png"
                 alt="LOGO FOOTER"
               />
             </FooterLogo>

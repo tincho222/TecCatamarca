@@ -73,7 +73,7 @@ export const Maint = () => {
     },
   };
 
-  const {auth}= useAuth();
+  const { auth } = useAuth();
 
   console.log(auth);
 

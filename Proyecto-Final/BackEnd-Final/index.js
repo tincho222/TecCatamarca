@@ -1,44 +1,44 @@
-//importar dependencias
-
+// Importar dependencias
 const connection = require("./database/connection");
-
 const express = require("express");
-
 const cors = require("cors");
 
-console.log("API node arrancada");
+console.log("API Node arrancada");
 
-//conexion a base de datos
+// Conexión a base de datos
 connection();
 
-//crear servidor de node
+// Crear servidor de Node
 const app = express();
-
 const puerto = 3900;
 
-//configurar cors
-app.use(cors());
-
-//convertir daros del body a objetos js
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
+// Configuración de CORS
 const corsOptions = {
-  // Reemplaza con el origen de tu frontend
-  methods: "GET,POST,PUT,DELETE",
-  allowedHeaders: "Content-Type,Authorization",
+  origin: 'http://localhost:5173', // Cambia esto según tu frontend
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
+// Habilitar CORS con las opciones correctas
 app.use(cors(corsOptions));
-//cargar conf rutas
+
+// Middleware para responder a preflight requests (OPTIONS)
+app.options('*', cors(corsOptions));
+
+// Convertir datos del body a objetos JS
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use("/uploads", express.static("uploads"));
+
+// Cargar rutas
 const UserRuter = require("./routes/user");
 const TechnicalRuter = require("./routes/technicalProfiles");
 const RoleRuter = require("./routes/role");
 const CategoriesRuter = require("./routes/categories");
 const ServicesRuter = require("./routes/services");
 const OrdersRuter = require("./routes/orders");
-const ReviewsRuter=require("./routes/reviews"); 
-const NotificationsRuter=require("./routes/notifications"); 
+const ReviewsRuter = require("./routes/reviews");
+const NotificationsRuter = require("./routes/notifications");
 
 app.use("/api/user", UserRuter);
 app.use("/api/technical", TechnicalRuter);
@@ -48,9 +48,8 @@ app.use("/api/services", ServicesRuter);
 app.use("/api/orders", OrdersRuter);
 app.use("/api/reviews", ReviewsRuter);
 app.use("/api/notifications", NotificationsRuter);
-/*app.use("/api/follow", FollowRuter);  */
-//poner servidor a escuchar peticiones http
 
+// Poner servidor a escuchar peticiones HTTP
 app.listen(puerto, () => {
-  console.log("servidor corriendo en el puero 3900");
+  console.log(`Servidor corriendo en el puerto ${puerto}`);
 });

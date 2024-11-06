@@ -6,10 +6,6 @@ import {
   Typography,
   Alert,
   Grid,
-  InputLabel,
-  MenuItem,
-  FormControl,
-  Select,
 } from "@mui/material";
 import { UseForm } from "../../hooks/UseForm";
 import { Global } from "../../helpers/Global";
@@ -27,7 +23,7 @@ export const Register = () => {
     });
 
     const fileInput = document.querySelector("#file0");
-    if (fileInput.files[0]) {
+    if (fileInput.files.length > 0) {
       formData.append("file0", fileInput.files[0]);
     }
 
@@ -66,12 +62,6 @@ export const Register = () => {
               )}
               {saved === "error" && (
                 <Alert severity="error">Usuario No registrado!!</Alert>
-              )}
-              {saved === "image_uploaded" && (
-                <Alert severity="success">Imagen subida con éxito!!</Alert>
-              )}
-              {saved === "image_upload_error" && (
-                <Alert severity="error">Error al subir la imagen!!</Alert>
               )}
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -132,14 +122,14 @@ export const Register = () => {
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
+              {/* <TextField
                 fullWidth
                 label="Roles"
                 name="id_roleNum"
                 onChange={changed}
                 type="number"
                 variant="outlined"
-              />
+              /> */}
             </Grid>
             <Grid item xs={12}>
               <Button
@@ -152,9 +142,7 @@ export const Register = () => {
                 <input
                   type="file"
                   hidden
-                  name="profile_image"
                   id="file0"
-                  onChange={changed}
                 />
               </Button>
             </Grid>

@@ -13,11 +13,61 @@ import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
 import { Box } from "@mui/material";
 import { Link } from "react-router-dom";
+import { useState } from "react";
+import { useEffect } from "react";
 const settings = ["Profile", "Account", "Dashboard", "Logout"];
+import LogoutIcon from "@mui/icons-material/Logout";
+import useAuth from "../../../hooks/useAuth";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 
 function NavPrivate() {
-  const [anchorElNav, setAnchorElNav] = React.useState(null);
-  const [anchorElUser, setAnchorElUser] = React.useState(null);
+  const [anchorElNav, setAnchorElNav] = useState(null);
+  const [anchorElUser, setAnchorElUser] = useState(null);
+  const [isTechnical, setIsTechnical] = useState(false); // Estado para determinar si es técnico
+  const [loading, setLoading] = useState(true);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  }; // Estado para determinar si la verificación está en proceso
+  useEffect(() => {
+    // Obtener el usuario del localStorage
+    const user = localStorage.getItem("user");
+
+    if (user) {
+      // Parsear el JSON del usuario
+      const userData = JSON.parse(user);
+
+      // Obtener el campo role_name, que puede ser un array
+      const roleName = userData.role_name;
+
+      // Verificación para role_name si es un array y contiene "technical"
+      if (Array.isArray(roleName) && roleName.includes("technical")) {
+        setIsTechnical(true); // Si es técnico, cambia el estado a true
+      } else {
+        setIsTechnical(false); // Si no, establece el estado en false
+      }
+
+      // Verificación para el campo roles, si existe
+      const roles = userData.roles;
+      if (roles && Array.isArray(roles) && roles.includes("technical")) {
+        setIsTechnical(true); // Si roles incluye "technical", cambia el estado a true
+      } else if (!Array.isArray(roleName) || !roleName.includes("technical")) {
+        setIsTechnical(false); // Si no cumple ninguna condición, establece el estado en false
+      }
+
+      console.log(userData);
+    } else {
+      // Si no hay usuario en el localStorage, establecer el estado en false
+      setIsTechnical(false);
+    }
+  }, []);
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -33,6 +83,7 @@ function NavPrivate() {
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
   };
+  const { auth } = useAuth();
 
   return (
     <Container sx={{ backgroundColor: "#111827", mb: 11 }} maxWidth="auto">
@@ -50,7 +101,7 @@ function NavPrivate() {
             >
               <Link to="/">
                 <img
-                  src={"src/assets/img/CatamarcaTec-Logos.png"}
+                  src={"../src/assets/img/CatamarcaTec-Logos.png"}
                   alt="Logo"
                   style={{
                     height: "70px", // ajusta el tamaño según sea necesario
@@ -246,7 +297,7 @@ function NavPrivate() {
             <MenuItem onClick={handleCloseNavMenu}>
               <Typography
                 component={Link}
-                to="/private/tecnicos"
+                to="/private/feedTecnicos"
                 textAlign="center"
                 sx={{
                   color: "inherit",
@@ -278,24 +329,173 @@ function NavPrivate() {
                   },
                 }}
               >
+                
                 Tecnicos
               </Typography>
             </MenuItem>
+
+            {/* Botón para abrir el menú desplegable de Cuenta */}
+
+            <Button
+              onClick={handleMenuOpen}
+              sx={{
+                textTransform: "none",
+                color: "inherit",
+                textDecoration: "none",
+                position: "relative",
+                "&:hover::after": {
+                  content: '""',
+                  position: "absolute",
+                  width: "100%",
+                  height: "2px",
+                  bottom: "-2px", //ajusta este valor para darle más espacio
+                  left: "0",
+                  backgroundColor: "currentColor",
+                  visibility: "visible",
+                  transform: "scaleX(1)",
+                  transition: "all 0.1s ease-in-out",
+                },
+                "&::after": {
+                  content: '""',
+                  position: "absolute",
+                  width: "100%",
+                  height: "2px",
+                  bottom: "-2px", //ajusta este valor para darle más espacio
+                  left: "0",
+                  backgroundColor: "currentColor",
+                  visibility: "hidden",
+                  transform: "scaleX(0)",
+                  transition: "all 0.1s ease-in-out",
+                },
+              }}
+            >
+              <Avatar
+                src={`http://localhost:3900/uploads/avatars/${auth.profile_image}`} // La URL de la imagen del perfil del usuario
+                alt="Mi Cuenta"
+                sx={{
+                  width: 32,
+                  height: 32,
+                  mr: 1,
+                }}
+              />
+            </Button>
+
+            {/* Menú desplegable */}
+            <Menu
+              id="account-menu"
+              anchorEl={anchorEl}
+              open={open}
+              onClose={handleMenuClose}
+              MenuListProps={{
+                "aria-labelledby": "account-button",
+              }}
+            >
+              {/* Menú condicional según el estado de isTechnical */}
+              <MenuItem onClick={handleMenuClose}>
+                <Typography
+                  component={Link}
+                  to={isTechnical ? "/private/editTec" : "/private/registerTec"}
+                  textAlign="center"
+                  sx={{
+                    color: isTechnical ? "inherit" : "green",
+                    textDecoration: "none",
+                    position: "relative",
+                    alignItems: "center", // Centra verticalmente el texto y el ícono
+                    justifyContent: "center", // Centra horizontalmente el contenido
+                    "&:hover::after": {
+                      content: '""',
+                      position: "absolute",
+                      width: "100%",
+                      height: "2px",
+                      bottom: "-2px",
+                      left: "0",
+                      backgroundColor: "currentColor",
+                      visibility: "visible",
+                      transform: "scaleX(1)",
+                      transition: "all 0.1s ease-in-out",
+                    },
+                    "&::after": {
+                      content: '""',
+                      position: "absolute",
+                      width: "100%",
+                      height: "2px",
+                      bottom: "-2px",
+                      left: "0",
+                      backgroundColor: "currentColor",
+                      visibility: "hidden",
+                      transform: "scaleX(0)",
+                      transition: "all 0.1s ease-in-out",
+                    },
+                  }}
+                >
+                  
+                  <ManageAccountsIcon sx={{ mr: 1 }} />{" "}
+                  {isTechnical ? "Perfil tecnico" : "Crear perfil tecnico"}
+                </Typography>
+              </MenuItem>
+              {/* Puedes agregar más opciones aquí */}
+              <MenuItem onClick={handleCloseNavMenu}>
+                <Typography
+                  component={Link}
+                  to="/private/editUsers"
+                  textAlign="center"
+                  sx={{
+                    color: "inherit",
+                    textDecoration: "none",
+                    display: "flex",
+                    alignItems: "center", // Centra verticalmente el texto y el ícono
+                    justifyContent: "center", // Centra horizontalmente el contenido
+                    position: "relative",
+                    "&:hover::after": {
+                      content: '""',
+                      position: "absolute",
+                      width: "100%",
+                      height: "2px",
+                      bottom: "-2px",
+                      left: "0",
+                      backgroundColor: "currentColor",
+                      visibility: "visible",
+                      transform: "scaleX(1)",
+                      transition: "all 0.1s ease-in-out",
+                    },
+                    "&::after": {
+                      content: '""',
+                      position: "absolute",
+                      width: "100%",
+                      height: "2px",
+                      bottom: "-2px",
+                      left: "0",
+                      backgroundColor: "currentColor",
+                      visibility: "hidden",
+                      transform: "scaleX(0)",
+                      transition: "all 0.1s ease-in-out",
+                    },
+                  }}
+                >
+                  <AccountCircleIcon sx={{ mr: 1 }} />{" "}
+                  {/* Icono con margen derecho */}
+                  Perfil personal
+                </Typography>
+              </MenuItem>
+            </Menu>
             <MenuItem onClick={handleCloseNavMenu}>
-            <Typography
+              <Typography
                 component={Link}
-                to="/Login"
+                to="/private/logout"
                 textAlign="center"
                 sx={{
                   color: "inherit",
                   textDecoration: "none",
                   position: "relative",
+                  display: "flex", // Hacemos que el contenedor sea flex
+                  alignItems: "center", // Centra verticalmente
+                  justifyContent: "center", // Centra horizontalmente
                   "&:hover::after": {
                     content: '""',
                     position: "absolute",
                     width: "100%",
                     height: "2px",
-                    bottom: "-2px",  //ajusta este valor para darle más espacio
+                    bottom: "-2px", // Ajusta este valor para darle más espacio
                     left: "0",
                     backgroundColor: "currentColor",
                     visibility: "visible",
@@ -307,47 +507,7 @@ function NavPrivate() {
                     position: "absolute",
                     width: "100%",
                     height: "2px",
-                    bottom: "-2px",  //ajusta este valor para darle más espacio
-                    left: "0",
-                    backgroundColor: "currentColor",
-                    visibility: "hidden",
-                    transform: "scaleX(0)",
-                    transition: "all 0.1s ease-in-out",
-                  },
-                }}
-              > 
-                Cerrar Sesion
-              </Typography>
-            </MenuItem>
-          
-            <MenuItem onClick={handleCloseNavMenu}>
-              <Typography
-                component={Link}
-                to="/private/registerTec"
-                textAlign="center"
-                sx={{
-                  color: "green",
-                  mr: 5,
-                  textDecoration: "none",
-                  position: "relative",
-                  "&:hover::after": {
-                    content: '""',
-                    position: "absolute",
-                    width: "100%",
-                    height: "2px",
-                    bottom: "-2px", // ajusta este valor para darle más espacio
-                    left: "0",
-                    backgroundColor: "currentColor",
-                    visibility: "visible",
-                    transform: "scaleX(1)",
-                    transition: "all 0.1s ease-in-out",
-                  },
-                  "&::after": {
-                    content: '""',
-                    position: "absolute",
-                    width: "100%",
-                    height: "2px",
-                    bottom: "-2px",  //ajusta este valor para darle más espacio
+                    bottom: "-2px", // Ajusta este valor para darle más espacio
                     left: "0",
                     backgroundColor: "currentColor",
                     visibility: "hidden",
@@ -356,8 +516,10 @@ function NavPrivate() {
                   },
                 }}
               >
-                Quiero ser Tecnico  
-              </Typography> 
+                Salir
+                <LogoutIcon sx={{ marginLeft: 1 }} />{" "}
+                {/* Icono de Logout con margen a la izquierda */}
+              </Typography>
             </MenuItem>
           </Box>
         </Toolbar>
